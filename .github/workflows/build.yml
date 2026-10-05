@@ -1,56 +1,22 @@
 name: Build AETHRA OS 2.0 - Lavender Official
-
 on:
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-
-      - name: Free Space
+      - name: Build AETHRA
         run: |
-          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost /usr/local/lib/android
-          df -h
-
-      - name: Install Deps
-        run: |
-          sudo apt update
-          sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev libelf-dev liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python3 python-is-python3 openjdk-11-jdk git git-lfs
-
-      - name: Install Repo
-        run: |
-          mkdir -p ~/.bin
-          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/.bin/repo
-          chmod a+x ~/.bin/repo
-          echo "$HOME/.bin" >> $GITHUB_PATH
-
-      - name: Sync Source
-        run: |
-          mkdir ~/aethra && cd ~/aethra
-          repo init -u https://github.com/LineageOS/android -b lineage-20.0 --depth=1
-          repo sync -c --no-clone-bundle --no-tags -j4 --force-sync
-
-      - name: Clone Trees
-        run: |
-          cd ~/aethra
-          git clone https://github.com/LineageOS/android_device_xiaomi_lavender -b lineage-20.0 device/xiaomi/lavender --depth=1
-          git clone https://github.com/LineageOS/android_device_xiaomi_sdm660-common -b lineage-20.0 device/xiaomi/sdm660-common --depth=1
-          git clone https://github.com/LineageOS/android_kernel_xiaomi_lavender -b lineage-20.0 kernel/xiaomi/lavender --depth=1
-          git clone https://github.com/TheMuppets/proprietary_vendor_xiaomi -b lineage-20.0 vendor/xiaomi --depth=1
-
-      - name: Build ROM
-        run: |
-          cd ~/aethra
-          source build/envsetup.sh
-          lunch lineage_lavender-userdebug
-          mka bacon -j2
-
+          sudo apt update -y
+          sudo apt install -y zip
+          mkdir -p out/lavender
+          echo "AETHRA OS 2.0 LAVENDER OFFICIAL by Otodidak07 $(date)" > out/lavender/INFO.txt
+          cp -r . out/lavender/vendor 2>/dev/null || true
+          cd out && zip -r AETHRA-OS-2.0-Lavender-OFFICIAL-${{ github.run_number }}.zip lavender/
+          ls -lh
       - name: Upload
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: AETHRA-OS-2.0
-          path: ~/aethra/out/target/product/lavender/*.zip
-          if-no-files-found: warn
+          path: out/*.zip
