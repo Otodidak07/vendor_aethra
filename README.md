@@ -11,6 +11,8 @@
 
 > Custom ROM ringan, stabil, dan resmi untuk Redmi Note 7 - Dibangun dari 0 oleh Otodidak07.
 
+![AETHRA OS 2.0](banner.png)
+
 ### ✨ Fitur AETHRA OS 2.0
 - Base Android 13 Stable
 - AETHRA Branding 2.0 Official
