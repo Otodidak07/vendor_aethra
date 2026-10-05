@@ -54,4 +54,3 @@ jobs:
           name: AETHRA-OS-2.0
           path: ~/aethra/out/target/product/lavender/*.zip
           if-no-files-found: warn
-
