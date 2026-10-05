@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Otodidak07/vendor_aethra/main/aethra-logo.png" width="600">
+  <img src="https://raw.githubusercontent.com/Otodidak07/vendor_aethra/main/IMG-20261005-WA2693.jpg" width="600">
 </p>
 
 # AETHRA OS 2.0 - OFFICIAL
