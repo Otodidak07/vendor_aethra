@@ -7,49 +7,51 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout Vendor Aethra
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Free up Space
+      - name: Free Space
         run: |
-          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost
-          sudo apt clean
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost /usr/local/lib/android
           df -h
 
-      - name: Install Dependencies
+      - name: Install Deps
         run: |
           sudo apt update
-          sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev libelf-dev liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python3 python-is-python3 openjdk-11-jdk git-lfs repo
+          sudo apt install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev libelf-dev liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python3 python-is-python3 openjdk-11-jdk git git-lfs
 
-      - name: Init Repo & Sync
+      - name: Install Repo
+        run: |
+          mkdir -p ~/.bin
+          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/.bin/repo
+          chmod a+x ~/.bin/repo
+          echo "$HOME/.bin" >> $GITHUB_PATH
+
+      - name: Sync Source
         run: |
           mkdir ~/aethra && cd ~/aethra
-          repo init -u https://github.com/LineageOS/android -b lineage-20.0 --depth=1 --git-lfs
-          repo sync -c --no-clone-bundle --no-tags -j$(nproc)
+          repo init -u https://github.com/LineageOS/android -b lineage-20.0 --depth=1
+          repo sync -c --no-clone-bundle --no-tags -j4 --force-sync
 
-      - name: Clone Device & Vendor
+      - name: Clone Trees
         run: |
           cd ~/aethra
-          git clone https://github.com/LineageOS/android_device_xiaomi_lavender -b lineage-20.0 device/xiaomi/lavender
-          git clone https://github.com/LineageOS/android_device_xiaomi_sdm660-common -b lineage-20.0 device/xiaomi/sdm660-common
-          git clone https://github.com/LineageOS/android_kernel_xiaomi_lavender -b lineage-20.0 kernel/xiaomi/lavender
-          git clone https://github.com/TheMuppets/proprietary_vendor_xiaomi -b lineage-20.0 vendor/xiaomi
-          rm -rf vendor/aethra
-          git clone https://github.com/Otodidak07/vendor_aethra.git vendor/aethra
-          cp -r vendor/aethra/banner.png vendor/aethra/icon.png device/xiaomi/lavender/
+          git clone https://github.com/LineageOS/android_device_xiaomi_lavender -b lineage-20.0 device/xiaomi/lavender --depth=1
+          git clone https://github.com/LineageOS/android_device_xiaomi_sdm660-common -b lineage-20.0 device/xiaomi/sdm660-common --depth=1
+          git clone https://github.com/LineageOS/android_kernel_xiaomi_lavender -b lineage-20.0 kernel/xiaomi/lavender --depth=1
+          git clone https://github.com/TheMuppets/proprietary_vendor_xiaomi -b lineage-20.0 vendor/xiaomi --depth=1
 
       - name: Build ROM
         run: |
           cd ~/aethra
           source build/envsetup.sh
-          export USE_CCACHE=1
-          ccache -M 20G
           lunch lineage_lavender-userdebug
-          mka bacon -j$(nproc)
+          mka bacon -j2
 
-      - name: Upload ROM Artifact
+      - name: Upload
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: AETHRA-OS-2.0-Lavender-OFFICIAL
+          name: AETHRA-OS-2.0
           path: ~/aethra/out/target/product/lavender/*.zip
+          if-no-files-found: warn
 
